@@ -77,6 +77,7 @@ int main(int argc, char *argv[]) {
     char *tracefile = NULL;
     char vModeString[32];
 
+    //parses the input statement
     int opt;
     while ((opt = getopt(argc, argv, "hvs:E:b:t:")) != -1) {
         switch (opt) {

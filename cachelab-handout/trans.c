@@ -24,15 +24,38 @@ char transpose_submit_desc[] = "Transpose submission";
 void transpose_submit(int M, int N, int A[N][M], int B[M][N])
 {
     int i, j, tmp, compR, compC, remR, remC; //i added complete rows and columns and remainders of row and columns so that i can seperate the transpose table into sections.
-    compR = N/8;
-    remR = N%8;
-    compC = M/8;
-    remC = M%8
+    
+    int inc;
+    if (M == 32 && N == 32) {
+        inc = 8;
+    } else if (M == 64 && N == 64) {
+        inc = 4;
+    } else {
+        inc = 8;
+    }
+    //int inc = 4; //using this for testing purposes to test different size subtables
+    compR = N/inc;
+    remR = N%inc;
+    compC = M/inc;
+    remC = M%inc;
 
-    for (i = 0; i < N; i++) {
-        for (j = 0; j < M; j++) {
-            tmp = A[i][j];
-            B[j][i] = tmp;
+    for (i = 0; i <= compR; i++) {
+        for (j = 0; j <= compC; j++) {
+            int r = inc, c = inc;
+            if (i == compR) {
+                r = remR;
+            }
+            if (j == compC) {
+                c = remC;
+            }
+            
+            for (int x = i * inc; x < i * inc + r; x++) {
+                for (int y = j * inc; y < j * inc + c; y++) {
+
+                    tmp = A[x][y];
+                    B[y][x] = tmp;
+                }
+            }
         }
     }    
 }
