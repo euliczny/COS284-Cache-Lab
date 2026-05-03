@@ -5,7 +5,7 @@
 #include <getopt.h>
 #include <unistd.h>
 #include "cachelab.h"
-
+#include <string.h>
 
 typedef struct {
     int valid; //checks if line is occupied
@@ -22,11 +22,11 @@ typedef struct {
 } Cache;
 
 
-void simulate(Cache *cache, int E, unsigned long set_index, 
-              unsigned long tag, int *hits, int *misses, int *evictions) {
+void simulate(Cache *cache, int E, int verbose, unsigned long set_index, 
+              unsigned long tag, int *hits, int *misses, int *evictions, char *vModeString) {
     
     Set *set = &cache->sets[set_index];
-    
+
     //increments lru before checking for hits, misses or evictions
     for (int i = 0; i < E; i++) {
         //makes sure the line is valid first
@@ -40,6 +40,7 @@ void simulate(Cache *cache, int E, unsigned long set_index,
         if (set->lines[i].valid && set->lines[i].tag == tag) {
             set->lines[i].lru = 0; //resets the recently used so that it is less likely to get removed compared to others
             (*hits)++;
+            strcat(vModeString, " hit");
             return;
         }
     }
@@ -51,6 +52,7 @@ void simulate(Cache *cache, int E, unsigned long set_index,
             set->lines[i].valid = 1;
             set->lines[i].tag = tag;
             set->lines[i].lru = 0;
+            strcat(vModeString, " miss");
             return;
         }
     }
@@ -59,12 +61,13 @@ void simulate(Cache *cache, int E, unsigned long set_index,
     (*evictions)++;
     int lru_index = 0;
     for (int i = 1; i < E; i++) {
-        if (set->lines[i].lru < set->lines[lru_index].lru) {
+        if (set->lines[i].lru > set->lines[lru_index].lru) {
             lru_index = i;
         }
     }
     set->lines[lru_index].tag = tag;
     set->lines[lru_index].lru = 0;
+    strcat(vModeString, " miss eviction");
 }
 
 
@@ -72,7 +75,7 @@ int main(int argc, char *argv[]) {
     int s = 0, E = 0, b = 0;
     int verbose = 0;
     char *tracefile = NULL;
-    (void)verbose;
+    char vModeString[32];
 
     int opt;
     while ((opt = getopt(argc, argv, "hvs:E:b:t:")) != -1) {
@@ -125,12 +128,16 @@ int main(int argc, char *argv[]) {
         unsigned long set_index = (address >> b) & ((1 << s) - 1); //shifst the offset bits off and seperates the s bits from the tag bits
         unsigned long tag = address >> (b + s); //shifts the s and b bits off the address to just have the tag alone
 
-        simulate(&cache, E, set_index, tag, &hits, &misses, &evictions);
+        vModeString[0] = '\0';
+
+        simulate(&cache, E, verbose, set_index, tag, &hits, &misses, &evictions, vModeString);
 
         //M has to be done twice because its a load AND store
         if (operation == 'M'){
-            simulate(&cache, E, set_index, tag, &hits, &misses, &evictions);
+            simulate(&cache, E, verbose, set_index, tag, &hits, &misses, &evictions, vModeString);
         }
+
+        printf("%c %lx,%d%s\n", operation, address, size, vModeString);
     }
 
 
