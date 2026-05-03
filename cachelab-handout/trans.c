@@ -1,4 +1,4 @@
-/* Ethan Uliczny @00700982
+/* Ethan Uliczny @00700982, Evan Smith @00700163
  *
  * trans.c - Matrix transpose B = A^T
  *
@@ -23,16 +23,16 @@ int is_transpose(int M, int N, int A[N][M], int B[M][N]);
 char transpose_submit_desc[] = "Transpose submission";
 void transpose_submit(int M, int N, int A[N][M], int B[M][N])
 {
-    int i, j, tmp, compR, compC, remR, remC; //i added complete rows and columns and remainders of row and columns so that i can seperate the transpose table into sections.
+    //i added complete rows and columns and remainders of row and columns so that i can seperate the transpose table into sections.
+    int i, j, tmp, compR, compC, remR, remC; 
     
     int inc;
-    if (M == 32 && N == 32) {
-        inc = 8;
-    } else if (M == 64 && N == 64) {
-        inc = 4;
+    if (M == 64 && N == 64) {
+        inc = 6;
     } else {
         inc = 8;
     }
+
     //int inc = 4; //using this for testing purposes to test different size subtables
     compR = N/inc;
     remR = N%inc;
@@ -41,6 +41,7 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N])
 
     for (i = 0; i <= compR; i++) {
         for (j = 0; j <= compC; j++) {
+    
             int r = inc, c = inc;
             if (i == compR) {
                 r = remR;
@@ -51,7 +52,6 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N])
             
             for (int x = i * inc; x < i * inc + r; x++) {
                 for (int y = j * inc; y < j * inc + c; y++) {
-
                     tmp = A[x][y];
                     B[y][x] = tmp;
                 }

@@ -1,4 +1,4 @@
-//Names and IDs: Ethan Uliczny (@00700982), Evan Smith (@__)
+//Names and IDs: Ethan Uliczny (@00700982), Evan Smith (@00700163)
 
 #include <stdio.h>
 #include <stdlib.h>
