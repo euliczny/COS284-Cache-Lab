@@ -23,37 +23,57 @@ int is_transpose(int M, int N, int A[N][M], int B[M][N]);
 char transpose_submit_desc[] = "Transpose submission";
 void transpose_submit(int M, int N, int A[N][M], int B[M][N])
 {
-    //i added complete rows and columns and remainders of row and columns so that i can seperate the transpose table into sections.
-    int i, j, tmp, compR, compC, remR, remC; 
+    // i add the a's so that the proccess of the hits and misses would be changed aas seen in the for loop below.
+    int i, j, x, y, r, c, inc, a0, a1, a2, a3; 
     
-    int inc;
     if (M == 64 && N == 64) {
-        inc = 6;
+        inc = 4;
     } else {
         inc = 8;
     }
 
-    //int inc = 4; //using this for testing purposes to test different size subtables
-    compR = N/inc;
-    remR = N%inc;
-    compC = M/inc;
-    remC = M%inc;
 
-    for (i = 0; i <= compR; i++) {
-        for (j = 0; j <= compC; j++) {
+    for (i = 0; i <= N/inc; i++) {
+        for (j = 0; j <= M/inc; j++) {
     
-            int r = inc, c = inc;
-            if (i == compR) {
-                r = remR;
+            r = inc;
+            c = inc;
+            if (i == N/inc) {
+                r = N%inc; //remaindre rows
             }
-            if (j == compC) {
-                c = remC;
+            if (j == M/inc) {
+                c = M%inc; //remainder columns
             }
             
-            for (int x = i * inc; x < i * inc + r; x++) {
-                for (int y = j * inc; y < j * inc + c; y++) {
-                    tmp = A[x][y];
-                    B[y][x] = tmp;
+            for (x = i * inc; x < i * inc + r; x++) {
+                if (r == inc && c == inc) {
+                    y = j * inc;
+
+                    a0 = A[x][y];
+                    a1 = A[x][y+1];
+                    a2 = A[x][y+2];
+                    a3 = A[x][y+3];
+
+                    B[y][x] = a0;
+                    B[y+1][x] = a1;
+                    B[y+2][x] = a2;
+                    B[y+3][x] = a3;
+                    if (inc == 8){
+                        a0 = A[x][y+4];
+                        a1 = A[x][y+5];
+                        a2 = A[x][y+6];
+                        a3 = A[x][y+7];
+
+                        B[y+4][x] = a0;
+                        B[y+5][x] = a1;
+                        B[y+6][x] = a2;
+                        B[y+7][x] = a3;
+                    }
+                } else {
+                    //catches the remainders in the sub tables
+                    for (y = j * inc; y < j * inc + c; y++) {
+                        B[y][x] = A[x][y];
+                    }
                 }
             }
         }

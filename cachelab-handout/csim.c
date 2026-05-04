@@ -40,7 +40,9 @@ void simulate(Cache *cache, int E, int verbose, unsigned long set_index,
         if (set->lines[i].valid && set->lines[i].tag == tag) {
             set->lines[i].lru = 0; //resets the recently used so that it is less likely to get removed compared to others
             (*hits)++;
-            strcat(vModeString, " hit");
+            if (verbose){
+                strcat(vModeString, " hit");
+            }
             return;
         }
     }
@@ -52,7 +54,9 @@ void simulate(Cache *cache, int E, int verbose, unsigned long set_index,
             set->lines[i].valid = 1;
             set->lines[i].tag = tag;
             set->lines[i].lru = 0;
-            strcat(vModeString, " miss");
+            if (verbose) {
+                strcat(vModeString, " miss");
+            }
             return;
         }
     }
@@ -67,7 +71,9 @@ void simulate(Cache *cache, int E, int verbose, unsigned long set_index,
     }
     set->lines[lru_index].tag = tag;
     set->lines[lru_index].lru = 0;
-    strcat(vModeString, " miss eviction");
+    if (verbose) {
+        strcat(vModeString, " miss eviction");
+    }
 }
 
 
@@ -86,6 +92,15 @@ int main(int argc, char *argv[]) {
             case 'b': b = atoi(optarg);     break;
             case 't': tracefile = optarg;   break;
             case 'v': verbose = 1;          break;
+            case 'h': 
+                      printf("Usage: ./csim [-hv] -s <s> -E <E> -b <b> -t <tracefile>\n");
+                      printf("  -h         Print this help message\n");
+                      printf("  -v         Optional verbose flag\n");
+                      printf("  -s <s>     Number of set index bits\n");
+                      printf("  -E <E>     Number of lines per set\n");
+                      printf("  -b <b>     Number of block bits\n");
+                      printf("  -t <file>  Trace file\n");
+                      exit(0);
         }
     }
 
